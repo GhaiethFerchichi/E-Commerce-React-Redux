@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
+import { BrowserRouter, Route, Switch } from "react-router-dom";
 
-import { Navbar, Products } from "./components/";
+import { Cart, Navbar, Products } from "./components/";
 import { commerce } from "./lib/commerce.js";
 
 const App = () => {
@@ -26,14 +27,39 @@ const App = () => {
     fetchProductsData();
     fetchCartData();
   }, []);
-  console.log(productsData);
-  console.log(cart);
+
+  const updateCartQtyHandler = async (productID, quantity) => {
+    const { cart } = await commerce.cart.update(productID, { quantity });
+    setCart(cart);
+  };
+  const removeFromCartHandler = async (productID) => {
+    const { cart } = await commerce.cart.remove(productID);
+    setCart(cart);
+  };
+  const emptyCartHandler = async () => {
+    const { cart } = await commerce.cart.empty();
+    setCart(cart);
+  };
 
   return (
-    <div>
-      <Navbar totalItems={cart.total_items} />
-      <Products products={productsData} onAddToCard={addToCartHandler} />
-    </div>
+    <BrowserRouter>
+      <div>
+        <Navbar totalItems={cart.total_items} />
+        <Switch>
+          <Route exact path="/">
+            <Products products={productsData} onAddToCard={addToCartHandler} />
+          </Route>
+          <Route exact path="/Cart">
+            <Cart
+              cart={cart}
+              updateCartQtyHandler={updateCartQtyHandler}
+              removeFromCartHandler={removeFromCartHandler}
+              emptyCartHandler={emptyCartHandler}
+            />
+          </Route>
+        </Switch>
+      </div>
+    </BrowserRouter>
   );
 };
 
